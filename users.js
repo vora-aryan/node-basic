@@ -3,8 +3,7 @@ const userAge = 20;
 
 const printUser = (name, age) => {
   console.log(userName, age);
-  console.log(userName, age,"ok samir");
-
+  console.log(userName, age, "ok samir");
 };
 
 module.exports = { userName, userAge, printUser };
