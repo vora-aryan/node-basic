@@ -1,6 +1,8 @@
 const userModel = require("../models/user.model");
 const { generatePass, comparePass } = require("../util/genPassword");
 const { generateToken } = require("../util/tokenUtil");
+const { sendMailUtil } = require("./mailController");
+const jwt = require("jsonwebtoken");
 
 const getAllUsers = async (req, res) => {
   const users = await userModel.find().populate("role");
@@ -25,14 +27,49 @@ const getUserById = async (req, res) => {
 };
 
 const addUser = async (req, res) => {
-  const { name, age, course, stauts, password } = req.body;
+  const { name, age, course, stauts, password, email } = req.body;
 
   req.body.password = await generatePass(req.body.password);
   const user = await userModel.create(req.body);
 
+  const token = generateToken(user.toObject(), "abc");
+
+  sendMailUtil(email, token);
+
   res.json({
     data: user,
   });
+};
+
+const verifyUser = async (req, res) => {
+  const { token } = req.query;
+
+  if (!token) return res.json({ message: "Token required" });
+  console.log(token);
+
+  try {
+    const user = jwt.verify(token, "abc");
+
+    // if (!user) {
+    //   return res.json({ message: "User invalid" });
+    // }
+
+    const validateUser = await userModel.findById(user._id);
+
+    const updateStatus = await userModel.updateOne(
+      { _id: user._id },
+      { $set: { verfied: true } }
+    );
+
+    if (!validateUser) return res.json({ message: "User invalid" });
+
+    return res.json({
+      message: "User verified successfully",
+      updateStatus,
+    });
+  } catch (error) {
+    return res.json({ message: "Something went wrong" });
+  }
 };
 
 const deleteUser = async (req, res) => {
@@ -113,5 +150,6 @@ module.exports = {
   deleteUser,
   deleteUserByName,
   updateUser,
+  verifyUser,
   loginUser,
 };

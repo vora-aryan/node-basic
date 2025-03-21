@@ -2,6 +2,10 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
+    email: {
+      type: String,
+      unique: true,
+    },
     name: {
       type: String,
     },
@@ -25,6 +29,10 @@ const userSchema = new mongoose.Schema(
     field: {
       type: String,
       enum: ["IT", "Other"],
+    },
+    verfied: {
+      type: Boolean,
+      default: false,
     },
     hobbies: [
       {
